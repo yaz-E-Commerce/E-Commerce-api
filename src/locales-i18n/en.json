@@ -1,0 +1,8 @@
+{
+  "common": {
+    "errors": {
+      "UNEXPECTED": "An unexpected error occurred on the server.",
+      "NOT_FOUND": "The requested resource was not found."
+    }
+  }
+}
