@@ -2,7 +2,8 @@
   "common": {
     "errors": {
       "UNEXPECTED": "An unexpected error occurred on the server.",
-      "NOT_FOUND": "The requested resource was not found."
+      "NOT_FOUND": "The requested resource was not found.",
+      "VALIDATION_FAILED": "Please ensure all required fields are provided correctly."
     }
   }
 }

@@ -1,51 +1,60 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
-const i18n = require('i18n'); // <-- استيراد مكتبة الترجمة
+const i18n = require('i18n'); 
 const path = require('path');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
 const productRoutes = require('./routes/productRoutes');
-const { swaggerUi, specs } = require('./config/swagger'); 
-const errorMiddleware = require('./middlewares/errorMiddleware'); // <-- استيراد نظام الأخطاء والترجمة الذكي
+const { swaggerUi, getSwaggerSpecs } = require('./config/swagger');
+const errorMiddleware = require('./middlewares/errorMiddleware'); 
 
 const apiUrl = process.env.API_URL || '/api/v1';
 const PORT = process.env.PORT || 3000;
 
-// 1. الاتصال بقاعدة البيانات (MongoDB)
+// 1. الاتصال بقاعدة البيانات
 connectDB();
 
-// 2. إعدادات محرك الترجمة i18n العام
+// 2. إعدادات i18n
 i18n.configure({
     locales: ['en', 'ar'],
     directory: path.join(__dirname, './locales'),
     defaultLocale: 'ar',
-    objectNotation: true // للسماح بالقراءة بنظام النقاط مثل common.errors
+    objectNotation: true 
 });
 
 // 3. الـ Global Middlewares
 app.use(express.json());
 app.use(morgan('tiny'));
-app.use(i18n.init); // <-- تفعيل محرك الترجمة في دورة الطلب (Request Lifecycle)
+app.use(i18n.init); 
 
-// 4. Swagger UI (توثيق الـ API التفاعلي)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
-// 5. مسارات المشروع (Routes)
+// 4. مسارات المشروع (تنفذ وتسجل نفسها في الـ registry)
 app.use(`${apiUrl}/products`, productRoutes);
 
-// 6. تمليح ذكي: التقاط أي مسار غير موجود وتحويله كـ 404 مترجم للـ Frontend
+// 5. Swagger JSON Endpoint
+app.get('/swagger.json', (req, res) => {
+    res.json(getSwaggerSpecs());
+});
+
+// 6. تفعيل الـ Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(null, {
+    swaggerOptions: {
+        url: '/swagger.json'
+    }
+}));
+
+// 7. معالجة الـ 404
 app.use((req, res, next) => {
     const error = new Error('common.errors.NOT_FOUND');
     error.statusCode = 404;
-    next(error); // تمرير الخطأ فوراً إلى الـ errorMiddleware
+    next(error); 
 });
 
-// 7. الـ Error Middleware المركزي (يجب أن يكون دائماً آخر Middleware تفعله)
+// 8. الـ Error Middleware المركزي
 app.use(errorMiddleware);
 
-// 8. تشغيل السيرفر
+// 9. تشغيل السيرفر
 app.listen(PORT, () => {
     console.log(`🚀 Server is flying high on: http://localhost:${PORT}`);
     console.log(`📖 Swagger UI is available at: http://localhost:${PORT}/api-docs`);

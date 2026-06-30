@@ -1,67 +1,82 @@
 const express = require('express');
 const router = express.Router();
+
+// 1. استيراد المتحكمات والـ Middlewares
 const { getAllProducts, createProduct } = require('../controllers/productController');
+const { registerPaths, registerZodDto } = require('../config/swagger'); 
+const validateDto = require('../middlewares/validationMiddleware');
 
-/**
- * @swagger
- * tags:
- * name: Products
- * description: إدارة المنتجات في المتجر
- */
+// 2. استيراد الـ DTO (تأكد أنه في سطر منفصل تماماً)
+const { CreateProductDto } = require('../dtos/productDto');
 
-/**
- * @swagger
- * /api/v1/products:
- * get:
- * summary: جلب جميع المنتجات
- * tags: [Products]
- * parameters:
- * - in: header
- * name: accept-language
- * schema:
- * type: string
- * required: false
- * example: ar
- * responses:
- * 200:
- * description: تم جلب المنتجات بنجاح.
- * 500:
- * description: خطأ داخلي.
- */
+// 3. تسجيل الـ DTO في السواجر بأمان بعد تعريفه
+registerZodDto(CreateProductDto);
+
+// 4. توثيق المسارات
+const productPaths = [
+    {
+        method: 'get',
+        path: '/products',
+        summary: 'Get all products',
+        tags: ['Products'],
+        responses: {
+            200: {
+                description: 'Products retrieved successfully',
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/CreateProductDto' },
+                        },
+                        example: [
+                            {
+                                name: 'قهوة أردنية فاخرة',
+                                price: 12.5,
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    },
+    {
+        method: 'post',
+        path: '/products',
+        summary: 'Create a new product',
+        tags: ['Products'],
+        requestBody: {
+            required: true,
+            content: {
+                'application/json': {
+                    schema: { $ref: '#/components/schemas/CreateProductDto' },
+                    example: {
+                        name: 'قهوة أردنية فاخرة',
+                        price: 12.5,
+                    },
+                },
+            },
+        },
+        responses: {
+            201: {
+                description: 'Product created successfully',
+                content: {
+                    'application/json': {
+                        schema: { $ref: '#/components/schemas/CreateProductDto' },
+                        example: {
+                            name: 'قهوة أردنية فاخرة',
+                            price: 12.5,
+                        },
+                    },
+                },
+            },
+        },
+    },
+];
+
+registerPaths(productPaths);
+
+// 5. تعريف مسارات Express الفعلية
 router.get('/', getAllProducts);
-
-/**
- * @swagger
- * /api/v1/products:
- * post:
- * summary: إنشاء منتج جديد
- * tags: [Products]
- * parameters:
- * - in: header
- * name: accept-language
- * schema:
- * type: string
- * required: false
- * example: ar
- * requestBody:
- * required: true
- * content:
- * application/json:
- * schema:
- * type: object
- * properties:
- * name:
- * type: string
- * example: "قهوة أردنية"
- * price:
- * type: number
- * example: 10.5
- * responses:
- * 201:
- * description: تم الإنشاء بنجاح.
- * 500:
- * description: خطأ داخلي.
- */
-router.post('/', createProduct);
+router.post('/', validateDto(CreateProductDto), createProduct);
 
 module.exports = router;
