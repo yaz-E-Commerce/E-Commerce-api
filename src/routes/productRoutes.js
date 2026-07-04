@@ -10,7 +10,7 @@ const validateDto = require('../middlewares/validationMiddleware');
 const { CreateProductDto } = require('../dtos/productDto');
 
 // 3. تسجيل الـ DTO في السواجر بأمان بعد تعريفه
-registerZodDto(CreateProductDto);
+registerZodDto(CreateProductDto, 'CreateProductDto');
 
 // 4. توثيق المسارات
 const productPaths = [

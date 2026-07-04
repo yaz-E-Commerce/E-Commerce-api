@@ -6,7 +6,10 @@ const path = require('path');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
+// ⚠️ خطوة 1: استيراد الـ Routes أولاً لضمان تنفيذ الأسطر داخلها وتسجيل الـ DTOs
 const productRoutes = require('./routes/productRoutes');
+
+// ⚠️ خطوة 2: استيراد السواجر بعد الـ Routes لضمان امتلاء الـ Registry
 const { swaggerUi, getSwaggerSpecs } = require('./config/swagger');
 const errorMiddleware = require('./middlewares/errorMiddleware'); 
 
@@ -32,17 +35,15 @@ app.use(i18n.init);
 // 4. مسارات المشروع (تنفذ وتسجل نفسها في الـ registry)
 app.use(`${apiUrl}/products`, productRoutes);
 
-// 5. Swagger JSON Endpoint
+// 5. Swagger JSON Endpoint (يستدعي الدالة ديناميكياً عند الطلب لتقرأ المصفوفات الممتلئة)
 app.get('/swagger.json', (req, res) => {
     res.json(getSwaggerSpecs());
 });
 
-// 6. تفعيل الـ Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(null, {
-    swaggerOptions: {
-        url: '/swagger.json'
-    }
-}));
+// 6. تفعيل الـ Swagger UI (نمرر ()getSwaggerSpecs مباشرة هنا بدلاً من الرابط الداخلي لضمان الاستقرار)
+app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
+    swaggerUi.setup(getSwaggerSpecs())(req, res, next);
+});
 
 // 7. معالجة الـ 404
 app.use((req, res, next) => {
