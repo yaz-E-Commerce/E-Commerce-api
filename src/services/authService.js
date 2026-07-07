@@ -1,14 +1,15 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/userRepository');
-const { RoleType } = require('../config/rolePermissions');
+const RoleType = require('../common/enum/role-type.enum'); 
 
 class AuthService {
     async register(userData) {
         const existingUser = await userRepository.findByEmail(userData.email);
         if (existingUser) {
-            const error = new Error('Email already exists');
-            error.statusCode = 409;
+            // 🎯 تعديل: تحويل النص العادي إلى مفتاح ترجمة يحتوي على نقطة
+            const error = new Error('auth.errors.EMAIL_ALREADY_EXISTS');
+            error.statusCode = 409; // Conflict
             throw error;
         }
 
@@ -25,34 +26,38 @@ class AuthService {
 
         return {
             user: userPayload,
-            message: 'User registered successfully',
+            // نترك كائن البيانات نظيفاً لأن الـ Controller يقوم بحقن الـ message المترجمة تلقائياً
+            user: userPayload
         };
     }
 
     async login(credentials) {
         const user = await userRepository.findByEmail(credentials.email);
         if (!user) {
-            const error = new Error('Invalid email or password');
-            error.statusCode = 401;
+            // 🎯 تعديل: تحويل النص إلى مفتاح ترجمة
+            const error = new Error('auth.errors.INVALID_CREDENTIALS');
+            error.statusCode = 401; // Unauthorized
             throw error;
         }
 
         if (!user.isActive) {
-            const error = new Error('Account is inactive');
-            error.statusCode = 403;
+            // 🎯 تعديل: تحويل النص إلى مفتاح ترجمة
+            const error = new Error('auth.errors.ACCOUNT_INACTIVE');
+            error.statusCode = 403; // Forbidden
             throw error;
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
         if (!isPasswordValid) {
-            const error = new Error('Invalid email or password');
+            // 🎯 تعديل: استخدام نفس مفتاح بيانات الدخول الخاطئة لحماية الأمان
+            const error = new Error('auth.errors.INVALID_CREDENTIALS');
             error.statusCode = 401;
             throw error;
         }
 
         const secret = process.env.JWT_SECRET;
         if (!secret) {
-            const error = new Error('Server misconfiguration: JWT_SECRET is missing');
+            const error = new Error('common.errors.UNEXPECTED');
             error.statusCode = 500;
             throw error;
         }
@@ -63,13 +68,12 @@ class AuthService {
             active: user.isActive,
         }, secret, { expiresIn: '7d' });
 
-        const safeUser = { ...user };
+        const safeUser = user.toObject ? user.toObject() : { ...user };
         delete safeUser.password;
 
         return {
             token,
-            user: safeUser,
-            message: 'Login successful',
+            user: safeUser
         };
     }
 }

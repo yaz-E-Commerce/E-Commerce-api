@@ -1,48 +1,41 @@
-const i18n = require('i18n');
-const path = require('path');
+const i18n = require('i18n'); // استدعاء المكتبة مباشرة لاستخدام الـ API العالمي الخاص بها
 const ErrorLog = require('../models/errorLogModel');
 
-// إعداد مكتبة i18n
-i18n.configure({
-    locales: ['en', 'ar'],
-    directory: path.join(__dirname, '../locales'),
-    defaultLocale: 'ar',
-    objectNotation: true // لتفعيل القراءة بالنقطة مثل common.errors.UNEXPECTED
-});
-
 const errorMiddleware = async (err, req, res, next) => {
-    // 1. تحديد لغة الطلب من الـ Header
-    const acceptLanguage = req.headers['accept-language']?.split(',')[0]?.trim() || 'ar';
-    const lang = acceptLanguage.startsWith('ar') ? 'ar' : 'en';
-    
-    // تعيين اللغة الحالية للطلب
-    i18n.setLocale(req, lang);
-
     let status = err.statusCode || 500;
-    let message = err.message || 'common.errors.UNEXPECTED';
+    let messageKey = err.message || 'common.errors.UNEXPECTED';
     let errorCode = 'UNEXPECTED';
-    let details = err.stack || undefined;
+    let finalMessage = messageKey;
 
-    // استخراج الـ errorCode من آخر كلمة بالنص إذا كان مقسماً بنقاط
-    if (typeof message === 'string' && message.includes('.')) {
-        errorCode = message.split('.').pop().toUpperCase();
+    // 1. استخراج الـ errorCode ديناميكياً من آخر كلمة بالنص (مثال: VALIDATION_FAILED)
+    if (typeof messageKey === 'string' && messageKey.includes('.')) {
+        errorCode = messageKey.split('.').pop().toUpperCase();
     }
 
-    // 2. محرك الترجمة الذكي
-    if (typeof message === 'string' && message.startsWith('common.')) {
+    // 2. 🎯 لقط اللغة الحالية للطلب بدقة (سواء قادمة من الـ Header أو المثبتة بالـ req)
+    const currentLocale = i18n.getLocale(req) || req.headers['accept-language']?.split(',')[0]?.trim() || 'ar';
+    const lang = currentLocale.startsWith('ar') ? 'ar' : 'en';
+
+    // 3. 🎯 محرك الترجمة المباشر (تجاوز مشاكل الـ res Context)
+    if (typeof messageKey === 'string' && messageKey.includes('.')) {
         try {
-            // الترجمة التلقائية بناءً على مفتاح الـ JSON والنقاط
-            message = i18n.__({ phrase: message, locale: lang });
+            // نمرر الـ phrase والـ locale يدوياً لضمان قراءة ملف الـ JSON الصحيح
+            finalMessage = i18n.__({ phrase: messageKey, locale: lang });
+            
+            // في حال لم يجد المفتاح في ملفات الـ JSON (أو أعاد المفتاح نفسه) وكان الخطأ 500
+            if (finalMessage === messageKey && status === 500) {
+                finalMessage = i18n.__({ phrase: 'common.errors.UNEXPECTED', locale: lang });
+            }
         } catch (e) {
-            console.warn('⚠️ Translation fallback active for:', message);
+            console.warn('⚠️ Translation fallback active for:', messageKey);
         }
     }
 
-    // 3. 🚀 تدوين الخطأ تلقائياً في السحاب (MongoDB)
+    // 4. 🚀 تدوين الخطأ تلقائياً في السحاب (MongoDB)
     try {
         await ErrorLog.create({
-            message: message,
-            stack: details,
+            message: finalMessage,
+            stack: err.stack || undefined,
             path: req.originalUrl,
             method: req.method,
             statusCode: status,
@@ -53,14 +46,16 @@ const errorMiddleware = async (err, req, res, next) => {
         console.error('❌ Failed to save error log to DB:', logError);
     }
 
-    // 4. تشكيل الرد النهائي الـ Clean للـ Frontend بنفس أسلوب مشروعك السابق
-    res.status(status).json({
+    // 5. تشكيل الرد النهائي الـ Clean للـ Frontend
+    return res.status(status).json({
         success: false,
         statusCode: status,
         path: req.originalUrl,
         timestamp: new Date().toISOString(),
         errorCode: errorCode,
-        message: message
+        message: finalMessage,
+        // إذا كان هناك تفاصيل حقول مخصصة (أخطاء التحقق القادمة من validationMiddleware)
+        ...(err.details ? { errors: err.details } : {})
     });
 };
 

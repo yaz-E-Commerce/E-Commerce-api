@@ -36,17 +36,32 @@ const buildPaths = () => {
         if (!paths[route.path]) {
             paths[route.path] = {};
         }
+
+        // 🎯 تجهيز الـ Parameters وحقن هيدر اللغة تلقائياً
+        const parameters = route.parameters ? [...route.parameters] : [];
+        
+        parameters.push({
+            name: 'Accept-Language',
+            in: 'header',
+            required: false,
+            description: 'لغة الاستجابة المطلوبة (ar للعربية، en للإنجليزية)',
+            schema: {
+                type: 'string',
+                enum: ['ar', 'en'], // يظهر كـ Dropdown خيارات منسدلة في السواجر
+                default: 'ar'       // مطابق للـ defaultLocale في app.js عندك
+            }
+        });
+
         paths[route.path][route.method] = {
             summary: route.summary,
             tags: route.tags,
-            ...(route.parameters ? { parameters: route.parameters } : {}),
+            parameters: parameters, // حقن المصفوفة المحدثة
             ...(route.requestBody ? { requestBody: route.requestBody } : {}),
             responses: route.responses,
         };
     });
     return paths;
 };
-
 const getSwaggerSpecs = () => ({
     openapi: '3.0.0',
     info: {
