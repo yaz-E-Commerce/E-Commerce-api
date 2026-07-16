@@ -5,18 +5,22 @@ extendZodWithOpenApi(z);
 
 const CreateProductDto = z.object({
     name: z.string({
-        required_error: "common.errors.VALIDATION_FAILED" // مفتاح الترجمة الموحد عندك
-    }).min(3).openapi({ 
-        description: 'اسم المنتج الإلكتروني', 
-        example: 'قهوة أردنية فاخرة' 
-    }),
-    
-    price: z.number({
-        required_error: "common.errors.VALIDATION_FAILED"
-    }).positive().openapi({ 
-        description: 'سعر المنتج بالدينار', 
-        example: 12.50 
+        required_error: 'product.errors.NAME_REQUIRED',
+        invalid_type_error: 'product.errors.NAME_REQUIRED'
     })
-}).openapi('CreateProductDto'); // 👈 هذا الإسم اللي رح يظهر بالسواجر تحت في الـ Schemas
+    .refine((val) => val.trim().length >= 3, {
+        message: 'product.errors.NAME_TOO_SHORT'
+    })
+    .refine((val) => val.trim().length <= 120, {
+        message: 'product.errors.NAME_TOO_LONG'
+    }),
+
+    // تعديل جذري لـ price لتفادي مشاكل الـ preprocess مع الـ undefined
+    price: z.number({
+        required_error: 'product.errors.PRICE_REQUIRED',
+        invalid_type_error: 'product.errors.PRICE_REQUIRED'
+    })
+    .positive({ message: 'product.errors.PRICE_MUST_BE_POSITIVE' })
+}).openapi('CreateProductDto');
 
 module.exports = { CreateProductDto };

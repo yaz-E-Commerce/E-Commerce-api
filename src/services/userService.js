@@ -22,12 +22,12 @@ class UserService {
       throw this.createError('common.errors.FORBIDDEN', 403);
     }
 
-    let finalReason = reason;
-    if (!finalReason) {
-      finalReason = isOwner 
-        ? 'تم إغلاق الحساب بناءً على طلب المستخدم نفسه.' 
-        : 'تم حظر وإغلاق الحساب بواسطة إدارة المنصة.';
-    }
+let finalReason = reason;
+if (!finalReason) {
+  finalReason = isOwner 
+    ? 'user.deleteReason.OWNER_REQUEST'     // في ملف الـ JSON العربي: "تم إغلاق الحساب بناءً على طلب المستخدم نفسه."
+    : 'user.deleteReason.ADMIN_BAN';       // في ملف الـ JSON العربي: "تم حظر وإغلاق الحساب بواسطة إدارة المنصة."
+}
 
     return await userRepository.softDelete(userIdToDelete, requestedBy.id, finalReason);
   }

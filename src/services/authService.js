@@ -26,8 +26,6 @@ class AuthService {
 
         return {
             user: userPayload,
-            // نترك كائن البيانات نظيفاً لأن الـ Controller يقوم بحقن الـ message المترجمة تلقائياً
-            user: userPayload
         };
     }
 
