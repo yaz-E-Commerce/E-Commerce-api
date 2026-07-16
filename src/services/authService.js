@@ -61,7 +61,7 @@ class AuthService {
             error.statusCode = 500;
             throw error;
         }
-
+        await userRepository.updateLastLogin(user._id);
         const token = jwt.sign({
             id: user._id,
             role: user.role,

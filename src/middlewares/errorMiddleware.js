@@ -1,4 +1,5 @@
-const i18n = require('i18n'); // استدعاء المكتبة مباشرة لاستخدام الـ API العالمي الخاص بها
+// src/middlewares/errorMiddleware.js
+const i18n = require('i18n');
 const ErrorLog = require('../models/errorLogModel');
 
 const errorMiddleware = async (err, req, res, next) => {
@@ -7,31 +8,31 @@ const errorMiddleware = async (err, req, res, next) => {
     let errorCode = 'UNEXPECTED';
     let finalMessage = messageKey;
 
-    // 1. استخراج الـ errorCode ديناميكياً من آخر كلمة بالنص (مثال: VALIDATION_FAILED)
+    // 1. استخراج الـ Code الخاص بالخطأ للـ Frontend (مثال: VALIDATION_FAILED)
     if (typeof messageKey === 'string' && messageKey.includes('.')) {
         errorCode = messageKey.split('.').pop().toUpperCase();
     }
 
-    // 2. 🎯 لقط اللغة الحالية للطلب بدقة (سواء قادمة من الـ Header أو المثبتة بالـ req)
-    const currentLocale = i18n.getLocale(req) || req.headers['accept-language']?.split(',')[0]?.trim() || 'ar';
-    const lang = currentLocale.startsWith('ar') ? 'ar' : 'en';
+    // 2. التقاط اللغة بأمان بدون الاعتماد على i18n.getLocale(req) لحمايته من الانهيار المبكر
+    const acceptLanguage = req.headers['accept-language']?.split(',')[0]?.trim() || 'ar';
+    const lang = acceptLanguage.startsWith('en') ? 'en' : 'ar';
 
-    // 3. 🎯 محرك الترجمة المباشر (تجاوز مشاكل الـ res Context)
+    // 3. محرك الترجمة المباشر مع Fallback آمن للـ 500 Errors
     if (typeof messageKey === 'string' && messageKey.includes('.')) {
         try {
-            // نمرر الـ phrase والـ locale يدوياً لضمان قراءة ملف الـ JSON الصحيح
             finalMessage = i18n.__({ phrase: messageKey, locale: lang });
             
-            // في حال لم يجد المفتاح في ملفات الـ JSON (أو أعاد المفتاح نفسه) وكان الخطأ 500
+            // حماية إضافية: إذا لم يتم العثور على المفتاح في الـ JSON وعاد المفتاح نفسه وكان الخطأ Server Error
             if (finalMessage === messageKey && status === 500) {
                 finalMessage = i18n.__({ phrase: 'common.errors.UNEXPECTED', locale: lang });
             }
         } catch (e) {
             console.warn('⚠️ Translation fallback active for:', messageKey);
+            finalMessage = lang === 'en' ? 'An unexpected error occurred' : 'حدث خطأ غير متوقع';
         }
     }
 
-    // 4. 🚀 تدوين الخطأ تلقائياً في السحاب (MongoDB)
+    // 4. كتابة اللوج في الـ DB داخل try-catch معزول تماماً لمنع تعليق أو فشل الـ HTTP Response
     try {
         await ErrorLog.create({
             message: finalMessage,
@@ -43,10 +44,10 @@ const errorMiddleware = async (err, req, res, next) => {
             userAgent: req.headers['user-agent']
         });
     } catch (logError) {
-        console.error('❌ Failed to save error log to DB:', logError);
+        console.error('❌ Failed to save error log to DB:', logError.message);
     }
 
-    // 5. تشكيل الرد النهائي الـ Clean للـ Frontend
+    // 5. الرد النهائي الموحد والـ Clean للـ Frontend
     return res.status(status).json({
         success: false,
         statusCode: status,
@@ -54,7 +55,6 @@ const errorMiddleware = async (err, req, res, next) => {
         timestamp: new Date().toISOString(),
         errorCode: errorCode,
         message: finalMessage,
-        // إذا كان هناك تفاصيل حقول مخصصة (أخطاء التحقق القادمة من validationMiddleware)
         ...(err.details ? { errors: err.details } : {})
     });
 };

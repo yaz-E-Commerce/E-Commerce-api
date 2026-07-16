@@ -45,6 +45,11 @@ const userSchema = new mongoose.Schema({
         default: false,
         index: true, // ⚡ تحسين الأداء: الفلترة بناءً على الحسابات المحذوفة ستصبح بلمح البصر
     },
+    deletedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+    },
     deletedAt: {
         type: Date,
         default: null,

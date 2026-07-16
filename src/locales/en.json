@@ -1,53 +1,52 @@
 {
-  "common": {
-    "errors": {
-      "UNEXPECTED": "An unexpected error occurred on the server.",
-      "NOT_FOUND": "The requested resource was not found.",
-      "VALIDATION_FAILED": "Please ensure all required fields are provided correctly."
+	"common": {
+		"errors": {
+			"NOT_FOUND": "Requested resource was not found.",
+			"UNEXPECTED": "An unexpected server error occurred.",
+			"VALIDATION_FAILED": "Validation failed for the input data.",
+			"FORBIDDEN": "You do not have permission to perform this action."
+      
+		}
+	},
+	"auth": {
+		"errors": {
+			"NAME_REQUIRED": "Name is a required field.",
+			"NAME_TOO_SHORT": "Name is too short.",
+			"NAME_TOO_LONG": "Name is too long.",
+			"EMAIL_REQUIRED": "Email is a required field.",
+			"INVALID_EMAIL_FORMAT": "Invalid email format.",
+			"PASSWORD_REQUIRED": "Password is a required field.",
+			"PASSWORD_TOO_SHORT": "Password must be at least 6 characters.",
+			"INVALID_GENDER": "Please select a valid gender value.",
+			"TOKEN_MISSING": " Verification token is missing from the request header.",
+      "FORBIDDEN_ROLE": "You do not have permission to register this role."
+		},
+   "success": {
+      "LOGIN": "Logged in successfully.",
+      "REGISTER": "Account registered successfully.",
+      "LOGOUT": "Logged out successfully.",
+      "PASSWORD_RESET": "Password reset successfully.",
+      "PASSWORD_CHANGED": "Password changed successfully.",
+      "EMAIL_VERIFIED": "Email verified successfully."
+
     }
-  },
-  "auth": {
-    "success": {
-      "REGISTERED": "Account registered successfully.",
-      "LOGIN": "Login successful."
-    },
-    "errors": {
-      "NAME_REQUIRED": "Name is required.",
-      "NAME_TOO_SHORT": "Name must be at least 2 characters.",
-      "NAME_TOO_LONG": "Name must be at most 100 characters.",
-      "EMAIL_REQUIRED": "Email is required.",
-      "INVALID_EMAIL_FORMAT": "Invalid email format.",
-      "PASSWORD_REQUIRED": "Password is required.",
-      "PASSWORD_TOO_SHORT": "Password must be at least 6 characters.",
-      "INVALID_GENDER": "Selected gender is invalid.",
-      "EMAIL_ALREADY_EXISTS": "Email already exists.",
-      "INVALID_CREDENTIALS": "Invalid email or password.",
-      "ACCOUNT_INACTIVE": "This account is currently inactive.",
-      "TOKEN_MISSING": "Unauthorized: Access token is missing.",
-      "TOKEN_EXPIRED": "Unauthorized: Access token has expired.",
-      "INVALID_TOKEN": "Unauthorized: Access token is invalid.",
-      "INVALID_TOKEN_PAYLOAD": "Unauthorized: Invalid token data.",
-      "INVALID_ROLE": "The provided role is invalid or unsupported.",
-      "JWT_SECRET_MISSING": "Server misconfiguration: JWT secret is missing.",
-      "UNAUTHORIZED": "Unauthorized access.",
-      "FORBIDDEN_PERMISSIONS": "Forbidden: You do not have the required permissions to access this resource.",
-      "FORBIDDEN_ROLE": "Forbidden: Access denied for this role."
-    }
-  },
-  "shop": {
-  "errors": {
-    "NAME_REQUIRED": "Shop name is required.",
-    "NAME_TOO_SHORT": "Shop name must be at least 2 characters.",
-    "NAME_TOO_LONG": "Shop name is too long.",
-    "SLUG_REQUIRED": "Slug is required.",
-    "SLUG_TOO_SHORT": "Slug must be at least 3 characters.",
-    "INVALID_SLUG_FORMAT": "Slug must contain only lowercase English letters, numbers, and hyphens.",
-    "INVALID_SPECIALIZATION": "Selected specialization is invalid.",
-    "HEADLINE_TOO_LONG": "Headline cannot exceed 150 characters.",
-    "INVALID_URL": "Please provide a valid URL.",
-    "INVALID_GOVERNORATE": "Selected governorate is invalid.",
-    "INVALID_DAY": "Invalid day of the week.",
-    "INVALID_TIME_FORMAT": "Invalid time format, must be HH:MM."
-  }
-}
+	},
+	"user": {
+		"errors": {
+			"NOT_FOUND": "User was not found or account is deleted.",
+			"ALREADY_ACTIVE": "Account is already active and does not need recovery.",
+			"DELETE_REASON_TOO_LONG": "Reason is too long, max length is 500 characters.",
+			"ACTIVE_STATUS_REQUIRED": "Active status is required.",
+			"ACTIVE_STATUS_INVALID": "Active status must be a boolean (true or false)."
+		},
+		"success": {
+			"DELETED": "Account deleted successfully.",
+			"FETCHED": "User profile retrieved successfully.",
+			"UPDATED": "Profile updated successfully.",
+			"ACTIVATED": "User account activated successfully.",
+			"DEACTIVATED": "User account deactivated successfully.",
+			"RESTORED": "Account restored successfully.",
+			"LISTED": "Users list retrieved successfully."
+		}
+	}
 }

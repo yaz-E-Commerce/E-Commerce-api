@@ -1,4 +1,4 @@
-const productRepository = require('../repositories/productRepository'); // نقطتين للخلف ثم دخول مجلد repositories
+const productRepository = require('../repositories/productRepository.js'); // نقطتين للخلف ثم دخول مجلد repositories
 class ProductService {
     async getAllProducts() {
         // هنا يمكنك إضافة بزنس لوجيك مستقبلاً (مثل عمل الكاش أو الفلترة)

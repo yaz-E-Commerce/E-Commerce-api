@@ -10,10 +10,12 @@ const connectDB = require('./config/db');
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
 const merchantRoutes = require('./routes/merchantRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // ⚠️ خطوة 2: استيراد السواجر بعد الـ Routes لضمان امتلاء الـ Registry
 const { swaggerUi, getSwaggerSpecs } = require('./config/swagger');
-const errorMiddleware = require('./middlewares/errorMiddleware'); 
+const errorMiddleware = require('./middlewares/errorMiddleware');
+const responseMiddleware = require('./middlewares/responseMiddleware');
 
 const apiUrl = process.env.API_URL || '/api/v1';
 const PORT = process.env.PORT || 3000;
@@ -32,12 +34,14 @@ i18n.configure({
 // 3. الـ Global Middlewares
 app.use(express.json());
 app.use(morgan('tiny'));
-app.use(i18n.init); 
+app.use(i18n.init);
+app.use(responseMiddleware);
 
 // 4. مسارات المشروع (تنفذ وتسجل نفسها في الـ registry)
 app.use(`${apiUrl}/products`, productRoutes);
 app.use(`${apiUrl}/auth`, authRoutes);
 app.use(`${apiUrl}/shops`, merchantRoutes);
+app.use(`${apiUrl}/users`, userRoutes);
 // 5. Swagger JSON Endpoint (يستدعي الدالة ديناميكياً عند الطلب لتقرأ المصفوفات الممتلئة)
 app.get('/swagger.json', (req, res) => {
     res.json(getSwaggerSpecs());
