@@ -9,6 +9,7 @@ const connectDB = require('./config/db');
 // ⚠️ خطوة 1: استيراد الـ Routes أولاً لضمان تنفيذ الأسطر داخلها وتسجيل الـ DTOs
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
+const merchantRoutes = require('./routes/merchantRoutes');
 
 // ⚠️ خطوة 2: استيراد السواجر بعد الـ Routes لضمان امتلاء الـ Registry
 const { swaggerUi, getSwaggerSpecs } = require('./config/swagger');
@@ -36,7 +37,7 @@ app.use(i18n.init);
 // 4. مسارات المشروع (تنفذ وتسجل نفسها في الـ registry)
 app.use(`${apiUrl}/products`, productRoutes);
 app.use(`${apiUrl}/auth`, authRoutes);
-
+app.use(`${apiUrl}/shops`, merchantRoutes);
 // 5. Swagger JSON Endpoint (يستدعي الدالة ديناميكياً عند الطلب لتقرأ المصفوفات الممتلئة)
 app.get('/swagger.json', (req, res) => {
     res.json(getSwaggerSpecs());

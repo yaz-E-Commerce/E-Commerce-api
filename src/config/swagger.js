@@ -55,13 +55,16 @@ const buildPaths = () => {
         paths[route.path][route.method] = {
             summary: route.summary,
             tags: route.tags,
-            parameters: parameters, // حقن المصفوفة المحدثة
+            parameters: parameters, // حقن مصفوفة الـ Parameters المعدلة
             ...(route.requestBody ? { requestBody: route.requestBody } : {}),
+            // ⚠️ تعديل جوهري: تمرير خاصية الـ security من الـ routes لتفعيل زر القفل على المسار
+            ...(route.security ? { security: route.security } : {}), 
             responses: route.responses,
         };
     });
     return paths;
 };
+
 const getSwaggerSpecs = () => ({
     openapi: '3.0.0',
     info: {
@@ -78,6 +81,15 @@ const getSwaggerSpecs = () => ({
     paths: buildPaths(),
     components: {
         schemas: schemasRegistry,
+        // ⚠️ تعديل جوهري: حقن الـ Security Scheme لكي يظهر زر Authorize العام في الأعلى
+        securitySchemes: {
+            bearerAuth: {
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'JWT',
+                description: 'أدخل الـ JWT Token الخاص بك هنا مباشرة (بدون كلمة Bearer)',
+            },
+        },
     },
 });
 

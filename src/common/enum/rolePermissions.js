@@ -1,5 +1,5 @@
-const RoleType = require('../common/enum/role-type.enum');
-const PermissionType = require('../common/enum/permission.enum');
+const RoleType = require('./role-type.enum');
+const PermissionType = require('./permission.enum');
 
 const ROLE_PERMISSIONS = Object.freeze({
     [RoleType.SUPER_ADMIN]: [],

@@ -1,34 +1,58 @@
 {
-  "common": {
-    "errors": {
-      "UNEXPECTED": "حدث خطأ غير متوقع في السيرفر.",
-      "NOT_FOUND": "المورد المطلوب غير موجود.",
-      "VALIDATION_FAILED": "يرجى التأكد من إدخال جميع الحقول المطلوبة بشكل صحيح."
-    }
-  },
-  "auth": {
-    "success": {
-      "REGISTERED": "تم تسجيل الحساب بنجاح.",
-      "LOGIN": "تم تسجيل الدخول بنجاح."
-    },
-    "errors": {
-      "NAME_REQUIRED": "الاسم حقل مطلوب.",
-      "NAME_TOO_SHORT": "يجب أن يكون الاسم حقلين على الأقل.",
-      "NAME_TOO_LONG": "الاسم طويل جداً.",
-      "EMAIL_REQUIRED": "البريد الإلكتروني مطلوب.",
-      "INVALID_EMAIL_FORMAT": "صيغة البريد الإلكتروني غير صحيحة.",
-      "PASSWORD_REQUIRED": "كلمة المرور مطلوبة.",
-      "PASSWORD_TOO_SHORT": "يجب ألا تقل كلمة المرور عن 6 رموز.",
-      "INVALID_GENDER": "الجنس المختار غير صحيح.",
-      "EMAIL_ALREADY_EXISTS": "البريد الإلكتروني مسجل بالفعل.",
-      "INVALID_CREDENTIALS": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
-      "ACCOUNT_INACTIVE": "هذا الحساب معطل حالياً.",
-      "TOKEN_MISSING": "غير مصرح: رمز الدخول مفقود.",
-      "TOKEN_EXPIRED": "غير مصرح: انتهت صلاحية رمز الدخول.",
-      "INVALID_TOKEN": "غير مصرح: رمز الدخول غير صحيح.",
-      "INVALID_TOKEN_PAYLOAD": "غير مصرح: بيانات الرمز غير صالحة.",
-      "UNAUTHORIZED": "دخول غير مصرح به.",
-      "FORBIDDEN_PERMISSIONS": "محظور: ليس لديك الصلاحيات الكافية للوصول إلى هذا المورد."
-    }
-  }
+	"common": {
+		"errors": {
+			"UNEXPECTED": "حدث خطأ غير متوقع في السيرفر.",
+			"NOT_FOUND": "المورد المطلوب غير موجود.",
+			"VALIDATION_FAILED": "يرجى التأكد من إدخال جميع الحقول المطلوبة بشكل صحيح."
+		}
+	},
+	"auth": {
+		"success": {
+			"REGISTERED": "تم تسجيل الحساب بنجاح.",
+			"LOGIN": "تم تسجيل الدخول بنجاح."
+		},
+		"errors": {
+			"NAME_REQUIRED": "الاسم حقل مطلوب.",
+			"NAME_TOO_SHORT": "يجب أن يكون الاسم حقلين على الأقل.",
+			"NAME_TOO_LONG": "الاسم طويل جداً.",
+			"EMAIL_REQUIRED": "البريد الإلكتروني مطلوب.",
+			"INVALID_EMAIL_FORMAT": "صيغة البريد الإلكتروني غير صحيحة.",
+			"PASSWORD_REQUIRED": "كلمة المرور مطلوبة.",
+			"PASSWORD_TOO_SHORT": "يجب ألا تقل كلمة المرور عن 6 رموز.",
+			"INVALID_GENDER": "الجنس المختار غير صحيح.",
+			"EMAIL_ALREADY_EXISTS": "البريد الإلكتروني مسجل بالفعل.",
+			"INVALID_CREDENTIALS": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+			"ACCOUNT_INACTIVE": "هذا الحساب معطل حالياً.",
+			"TOKEN_MISSING": "غير مصرح: رمز الدخول مفقود.",
+			"TOKEN_EXPIRED": "غير مصرح: انتهت صلاحية رمز الدخول.",
+			"INVALID_TOKEN": "غير مصرح: رمز الدخول غير صحيح.",
+			"INVALID_TOKEN_PAYLOAD": "غير مصرح: بيانات الرمز غير صالحة.",
+			"INVALID_ROLE": "الدور المقدم غير صالح أو غير مدعوم.",
+			"JWT_SECRET_MISSING": "إعداد الخادم غير صحيح: مفتاح JWT مفقود.",
+			"UNAUTHORIZED": "دخول غير مصرح به.",
+			"FORBIDDEN_PERMISSIONS": "محظور: ليس لديك الصلاحيات الكافية للوصول إلى هذا المورد.",
+			"FORBIDDEN_ROLE": "محظور: الوصول مرفوض لهذا الدور."
+		}
+	},
+	"shop": {
+		"errors": {
+			"NAME_REQUIRED": "اسم المتجر مطلوب.",
+			"NAME_TOO_SHORT": "يجب أن يكون اسم المتجر حرفين على الأقل.",
+			"NAME_TOO_LONG": "اسم المتجر طويل جداً.",
+			"SLUG_REQUIRED": "الرابط الفرعي (Slug) مطلوب.",
+			"SLUG_TOO_SHORT": "يجب أن يكون الرابط 3 حروف على الأقل.",
+			"INVALID_SLUG_FORMAT": "يجب أن يحتوي الرابط على أحرف صغيرة بالإنجليزية وأرقام وعلامة (-) فقط.",
+			"INVALID_SPECIALIZATION": "التخصص المختار غير مدعوم.",
+			"HEADLINE_TOO_LONG": "العنوان الترويجي يجب ألا يتجاوز 150 حرفاً.",
+			"INVALID_URL": "يجب إدخال رابط إنترنت صحيح.",
+			"INVALID_GOVERNORATE": "المحافظة المحددة غير صحيحة.",
+			"INVALID_DAY": "يوم الأسبوع غير صحيح.",
+			"INVALID_TIME_FORMAT": "صيغة الوقت غير صحيحة، يجب أن تكون HH:MM.",
+			"SHOP_NOT_FOUND": "shop.errors.SHOP_NOT_FOUND",
+			"SHOP_ALREADY_EXISTS": "shop.errors.SHOP_ALREADY_EXISTS"
+		}
+	},
+	"Operation `users": {
+		"findOne()` buffering timed out after 10000ms": "Operation `users.findOne()` buffering timed out after 10000ms"
+	}
 }

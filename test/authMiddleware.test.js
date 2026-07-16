@@ -1,8 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
-const { protect, requirePermissions } = require('../src/middlewares/authMiddleware');
-const { RoleType, PermissionType } = require('../src/config/rolePermissions');
+const { protect, requirePermissions, requireRoles } = require('../src/middlewares/authMiddleware');
+const { RoleType, PermissionType } = require('../src/common/enum/rolePermissions');
 
 function createRes() {
   return {
@@ -36,6 +36,22 @@ test('protect injects user and permissions from the token payload', () => {
   assert.deepEqual(req.user.permissions, [PermissionType.MANAGE_PRODUCTS, PermissionType.MANAGE_ORDERS]);
 });
 
+test('protect rejects unknown role values from the token payload', () => {
+  process.env.JWT_SECRET = 'test-secret';
+  const token = jwt.sign({ id: 'user-2', role: 'unknown-role', active: true }, process.env.JWT_SECRET);
+  const req = { headers: { authorization: `Bearer ${token}` } };
+  const res = createRes();
+  let errorPassed = null;
+
+  protect(req, res, (error) => {
+    errorPassed = error;
+  });
+
+  assert.ok(errorPassed);
+  assert.equal(errorPassed.statusCode, 401);
+  assert.equal(errorPassed.message, 'auth.errors.INVALID_ROLE');
+});
+
 test('requirePermissions bypasses super admins immediately', () => {
   const req = { user: { role: RoleType.SUPER_ADMIN, permissions: [] } };
   const res = createRes();
@@ -53,12 +69,27 @@ test('requirePermissions blocks when permissions are missing', () => {
   const req = { user: { role: RoleType.CUSTOMER, permissions: [] } };
   const res = createRes();
   let nextCalled = false;
+  let errorPassed = null;
 
-  requirePermissions(PermissionType.MANAGE_PRODUCTS)(req, res, () => {
-    nextCalled = true;
+  requirePermissions(PermissionType.MANAGE_PRODUCTS)(req, res, (error) => {
+    errorPassed = error;
   });
 
   assert.equal(nextCalled, false);
-  assert.equal(res.statusCode, 403);
-  assert.deepEqual(res.payload, { message: 'Forbidden: missing required permissions' });
+  assert.equal(errorPassed.statusCode, 403);
+  assert.equal(errorPassed.message, 'auth.errors.FORBIDDEN_PERMISSIONS');
+});
+
+test('requireRoles rejects invalid role values', () => {
+  const req = { user: { role: 'unknown-role' } };
+  const res = createRes();
+  let errorPassed = null;
+
+  requireRoles(RoleType.MERCHANT)(req, res, (error) => {
+    errorPassed = error;
+  });
+
+  assert.ok(errorPassed);
+  assert.equal(errorPassed.statusCode, 401);
+  assert.equal(errorPassed.message, 'auth.errors.INVALID_ROLE');
 });

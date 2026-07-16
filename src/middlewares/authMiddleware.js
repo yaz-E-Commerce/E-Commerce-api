@@ -1,5 +1,13 @@
 const jwt = require('jsonwebtoken');
-const { RoleType, ROLE_PERMISSIONS, PermissionType } = require('../config/rolePermissions');
+
+const RoleType = require('../common/enum/role-type.enum');
+const { ROLE_PERMISSIONS } = require('../common/enum/rolePermissions');
+
+const createAuthError = (message, statusCode = 401) => {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+};
 
 const getTokenFromHeader = (req) => {
   const authHeader = req.headers?.authorization || req.headers?.Authorization;
@@ -15,13 +23,37 @@ const getTokenFromHeader = (req) => {
   return token;
 };
 
+const normalizeRole = (rawRole) => {
+  if (typeof rawRole !== 'string') {
+    return null;
+  }
+
+  const normalizedRole = rawRole.trim().toLowerCase();
+  switch (normalizedRole) {
+    case 'super_admin':
+      return RoleType.SUPER_ADMIN;
+    case 'admin':
+      return RoleType.ADMIN;
+    case 'merchant':
+      return RoleType.MERCHANT;
+    case 'customer':
+      return RoleType.CUSTOMER;
+    default:
+      return null;
+  }
+};
+
 const buildUserFromToken = (payload) => {
   if (!payload || typeof payload !== 'object') {
     return null;
   }
 
-  const role = payload.role || RoleType.CUSTOMER;
-  const permissions = ROLE_PERMISSIONS[role] || [];
+  const role = normalizeRole(payload.role);
+  if (!role) {
+    throw createAuthError('auth.errors.INVALID_ROLE', 401);
+  }
+
+  const permissions = Array.isArray(ROLE_PERMISSIONS[role]) ? ROLE_PERMISSIONS[role] : [];
 
   return {
     id: payload.id || payload.sub || null,
@@ -35,34 +67,67 @@ const protect = (req, res, next) => {
   try {
     const token = getTokenFromHeader(req);
     if (!token) {
-      return res.status(401).json({ message: 'Unauthorized: token missing' });
+      return next(createAuthError('auth.errors.TOKEN_MISSING', 401));
     }
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
-      return res.status(500).json({ message: 'Server misconfiguration: JWT_SECRET is missing' });
+      return next(createAuthError('auth.errors.JWT_SECRET_MISSING', 500));
     }
 
     const decoded = jwt.verify(token, secret);
     const user = buildUserFromToken(decoded);
 
     if (!user) {
-      return res.status(401).json({ message: 'Unauthorized: invalid token payload' });
+      return next(createAuthError('auth.errors.INVALID_TOKEN_PAYLOAD', 401));
     }
 
     if (user.active === false) {
-      return res.status(403).json({ message: 'Forbidden: account is inactive' });
+      return next(createAuthError('auth.errors.ACCOUNT_INACTIVE', 403));
     }
 
     req.user = user;
     return next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: 'Unauthorized: token expired' });
+      return next(createAuthError('auth.errors.TOKEN_EXPIRED', 401));
     }
 
-    return res.status(401).json({ message: 'Unauthorized: invalid token' });
+    if (error.statusCode) {
+      return next(error);
+    }
+
+    return next(createAuthError('auth.errors.INVALID_TOKEN', 401));
   }
+};
+
+const requireRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    try {
+      const user = req.user;
+      if (!user) {
+        return next(createAuthError('auth.errors.UNAUTHORIZED', 401));
+      }
+
+      if (user.role === RoleType.SUPER_ADMIN) {
+        return next();
+      }
+
+      const normalizedUserRole = normalizeRole(user.role);
+      if (!normalizedUserRole) {
+        return next(createAuthError('auth.errors.INVALID_ROLE', 401));
+      }
+
+      const hasRole = allowedRoles.flat().includes(normalizedUserRole);
+      if (!hasRole) {
+        return next(createAuthError('auth.errors.FORBIDDEN_ROLE', 403));
+      }
+
+      return next();
+    } catch (error) {
+      return next(createAuthError('common.errors.UNEXPECTED', 500));
+    }
+  };
 };
 
 const requirePermissions = (...requiredPermissions) => {
@@ -70,11 +135,16 @@ const requirePermissions = (...requiredPermissions) => {
     try {
       const user = req.user;
       if (!user) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return next(createAuthError('auth.errors.UNAUTHORIZED', 401));
       }
 
       if (user.role === RoleType.SUPER_ADMIN) {
         return next();
+      }
+
+      const normalizedUserRole = normalizeRole(user.role);
+      if (!normalizedUserRole) {
+        return next(createAuthError('auth.errors.INVALID_ROLE', 401));
       }
 
       const normalizedRequired = requiredPermissions.flat().filter(Boolean);
@@ -86,17 +156,18 @@ const requirePermissions = (...requiredPermissions) => {
       const hasAccess = normalizedRequired.every((permission) => userPermissions.includes(permission));
 
       if (!hasAccess) {
-        return res.status(403).json({ message: 'Forbidden: missing required permissions' });
+        return next(createAuthError('auth.errors.FORBIDDEN_PERMISSIONS', 403));
       }
 
       return next();
     } catch (error) {
-      return res.status(500).json({ message: 'Internal server error' });
+      return next(createAuthError('common.errors.UNEXPECTED', 500));
     }
   };
 };
 
 module.exports = {
   protect,
+  requireRoles,
   requirePermissions,
 };
