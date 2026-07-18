@@ -1,68 +1,47 @@
-const merchantService = require('../services/merchantService');
+const merchantService = require('../services/merchantService')
+const catchAsync = require('../utils/catchAsync') // استيراد موحد
 
 class MerchantController {
-  /**
-   * إنشاء متجر خاص بالتاجر الحالي
-   */
-  async createMyShop(req, res, next) {
-    try {
-      // 1. البيانات هنا جاهزة ومفحوصة بنسبة 100% قادمة من الـ validateDto Middleware
-      const validatedData = req.body;
+    /**
+     * إنشاء متجر خاص بالتاجر الحالي
+     */
+    createMyShop = catchAsync(async (req, res) => {
+        // 1. البيانات تم فحصها وحقن القيم الافتراضية لها بنسبة 100% عبر الـ Validation Layer (Zod)
+        const validatedData = req.body
+        const merchantId = req.user.id
 
-      // 2. سحب الـ ID الخاص بالتاجر من كائن الـ user المرفق بالطلب في الـ Protect Middleware
-      const merchantId = req.user.id;
+        // 2. تنفيذ البزنس لوجيك
+        const shop = await merchantService.createShop(merchantId, validatedData)
 
-      // 3. تنفيذ البزنس لوجيك
-      const shop = await merchantService.createShop(merchantId, validatedData);
+        // 3. إرجاع الرد الموحد والمترجم آلياً عبر الـ Response Middleware
+        return res.ok(201, 'shop.messages.CREATED_SUCCESSFULLY', shop)
+    })
 
-      return res.status(201).json({
-        success: true,
-        message: 'shop.messages.CREATED_SUCCESSFULLY',
-        data: shop,
-      });
-    } catch (error) {
-      next(error); // التمرير التلقائي لـ Global Error Middleware
-    }
-  }
+    /**
+     * تعديل بيانات المتجر الخاص بالتاجر الحالي
+     */
+    updateMyShop = catchAsync(async (req, res) => {
+        const validatedData = req.body
+        const merchantId = req.user.id
 
-  /**
-   * تعديل بيانات المتجر الخاص بالتاجر الحالي
-   */
-  async updateMyShop(req, res, next) {
-    try {
-      // 1. البيانات جاهزة ومفحوصة عبر الـ UpdateShopDto الممرر بالـ Middleware
-      const validatedData = req.body;
-      const merchantId = req.user.id;
+        const shop = await merchantService.updateMyShop(
+            merchantId,
+            validatedData
+        )
 
-      // 2. تنفيذ الخدمة
-      const shop = await merchantService.updateMyShop(merchantId, validatedData);
+        return res.ok(200, 'shop.messages.UPDATED_SUCCESSFULLY', shop)
+    })
 
-      return res.status(200).json({
-        success: true,
-        message: 'shop.messages.UPDATED_SUCCESSFULLY',
-        data: shop,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+    /**
+     * جلب متجر للزوار عبر الـ Slug
+     */
+    getShopBySlug = catchAsync(async (req, res) => {
+        const { slug } = req.params
+        const shop = await merchantService.getShopBySlug(slug)
 
-  /**
-   * جلب متجر للزوار عبر الـ Slug
-   */
-  async getShopBySlug(req, res, next) {
-    try {
-      const { slug } = req.params;
-      const shop = await merchantService.getShopBySlug(slug);
-
-      return res.status(200).json({
-        success: true,
-        data: shop,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+        return res.ok(200, 'shop.messages.RETRIEVED_SUCCESSFULLY', shop)
+    })
 }
 
-module.exports = new MerchantController();
+// تصدير نسخة واحدة (Singleton Pattern)
+module.exports = new MerchantController()

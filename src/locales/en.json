@@ -66,5 +66,20 @@
             "CREATED": "Product created successfully."
         }
     },
-    "Invalid input": " expected number, received undefined"
+    "Invalid input": " expected number, received undefined",
+    "Validation failed for the input data.": "Validation failed for the input data.",
+
+    "shop": {
+        "errors": {
+            "SHOP_NOT_FOUND": "The requested shop was not found.",
+            "SLUG_ALREADY_EXISTS": "This shop slug already exists.",
+            "SHOP_ALREADY_EXISTS": "This merchant already has an existing shop.",
+            "SHOP_NAME_REQUIRED": "Shop name is required."
+        },
+        "messages": {
+            "CREATED_SUCCESSFULLY": "Shop has been created successfully and is pending approval.",
+            "UPDATED_SUCCESSFULLY": "Shop details have been updated successfully.",
+            "RETRIEVED_SUCCESSFULLY": "Shop details have been retrieved successfully."
+        }
+    }
 }

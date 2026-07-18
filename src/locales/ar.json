@@ -4,7 +4,8 @@
             "NOT_FOUND": "المورد المطلوب غير موجود.",
             "UNEXPECTED": "حدث خطأ غير متوقع في الخادم.",
             "VALIDATION_FAILED": "فشل التحقق من صحة البيانات الممررة.",
-            "FORBIDDEN": "ليس لديك الصلاحيات الكافية لإتمام هذه العملية."
+            "FORBIDDEN": "ليس لديك الصلاحيات الكافية لإتمام هذه العملية.",
+            "NAME_REQUIRED": "common.errors.NAME_REQUIRED"
         }
     },
     "auth": {
@@ -65,5 +66,22 @@
             "CREATED": "تم إنشاء المنتج بنجاح."
         }
     },
-    "Invalid input": " expected string, received undefined"
+    "Invalid input": " expected string, received undefined",
+    "Operation `products": {
+        "find()` buffering timed out after 10000ms": "Operation `products.find()` buffering timed out after 10000ms"
+    },
+
+    "shop": {
+        "errors": {
+            "SHOP_NOT_FOUND": "المتجر المطلوب غير موجود.",
+            "SLUG_ALREADY_EXISTS": "اسم المتجر (الرابط) موجود مسبقاً.",
+            "SHOP_ALREADY_EXISTS": "المتجر موجود مسبقاً.",
+            "SHOP_NAME_REQUIRED": "اسم المتجر مطلوب."
+        },
+        "messages": {
+            "CREATED_SUCCESSFULLY": "تم إنشاء المتجر بنجاح وبانتظار المراجعة.",
+            "UPDATED_SUCCESSFULLY": "تم تحديث بيانات المتجر بنجاح.",
+            "RETRIEVED_SUCCESSFULLY": "تم جلب بيانات المتجر بنجاح."
+        }
+    }
 }

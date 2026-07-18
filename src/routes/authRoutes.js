@@ -1,15 +1,19 @@
-const express = require('express');
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
 
-const { registerPaths, registerZodDto } = require('../config/swagger');
-const validateDto = require('../middlewares/validationMiddleware');
-const { register, login } = require('../controllers/authController');
-const { RegisterCustomerDto, RegisterMerchantDto, LoginUserDto } = require('../dtos/userDto');
+const { registerPaths, registerZodDto } = require('../config/swagger')
+const validateDto = require('../middlewares/validationMiddleware')
+const { register, login } = require('../controllers/authController')
+const {
+    RegisterCustomerDto,
+    RegisterMerchantDto,
+    LoginUserDto,
+} = require('../dtos/userDto')
 
 // تسجيل الـ DTOs داخل نظام السواجر الاحترافي
-registerZodDto(RegisterCustomerDto, 'RegisterCustomerDto');
-registerZodDto(RegisterMerchantDto, 'RegisterMerchantDto');
-registerZodDto(LoginUserDto, 'LoginUserDto');
+registerZodDto(RegisterCustomerDto, 'RegisterCustomerDto')
+registerZodDto(RegisterMerchantDto, 'RegisterMerchantDto')
+registerZodDto(LoginUserDto, 'LoginUserDto')
 
 const authPaths = [
     {
@@ -21,7 +25,9 @@ const authPaths = [
             required: true,
             content: {
                 'application/json': {
-                    schema: { $ref: '#/components/schemas/RegisterCustomerDto' },
+                    schema: {
+                        $ref: '#/components/schemas/RegisterCustomerDto',
+                    },
                 },
             },
         },
@@ -39,7 +45,9 @@ const authPaths = [
             required: true,
             content: {
                 'application/json': {
-                    schema: { $ref: '#/components/schemas/RegisterMerchantDto' },
+                    schema: {
+                        $ref: '#/components/schemas/RegisterMerchantDto',
+                    },
                 },
             },
         },
@@ -66,14 +74,22 @@ const authPaths = [
             401: { description: 'Invalid credentials' },
         },
     },
-];
+]
 
 // حقن المسارات آلياً في لوحة تحكم السواجر
-registerPaths(authPaths);
+registerPaths(authPaths)
 
 // ⚡ ربط المسارات الفعلية بالـ Middleware والـ Controller
-router.post('/register/customer', validateDto(RegisterCustomerDto), register);
-router.post('/register/merchant', validateDto(RegisterMerchantDto), register);
-router.post('/login', validateDto(LoginUserDto), login);
+router.post(
+    '/register/customer',
+    validateDto(RegisterCustomerDto, 'auth.errors'),
+    register
+)
+router.post(
+    '/register/merchant',
+    validateDto(RegisterMerchantDto, 'auth.errors'),
+    register
+)
+router.post('/login', validateDto(LoginUserDto, 'auth.errors'), login)
 
-module.exports = router;
+module.exports = router
